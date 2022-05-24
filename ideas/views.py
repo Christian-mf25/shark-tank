@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
+from urllib import request
 
 from django.db import IntegrityError
+from django.forms import ValidationError
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response
 
 from ideas.models import Idea
-from ideas.permissions import CreateOrRead
+from ideas.permissions import CreateOrRead, OwnerRead
 from ideas.serializers import IdeaSerializer, IdeaUpdateSerializer
 
 
@@ -99,3 +101,21 @@ class IdeasView(APIView):
         serializer = IdeaSerializer(idea[0])
         return Response(serializer.data, status.HTTP_200_OK)
 
+class IdeaOwnerView(APIView):
+    authentication_classes=[TokenAuthentication]
+    permission_classes=[OwnerRead]
+    def get(self, request:Request, idea_id=""):
+        try:
+            if idea_id:
+                idea = Idea.objects.filter(id = idea_id, user_id= request.user.id).first()
+                if not idea:
+                    return Response({"error":"Proposal not found"},status.HTTP_404_NOT_FOUND)
+                serializer = IdeaSerializer(idea)
+                return Response(serializer.data, status.HTTP_200_OK)
+
+            ideas = Idea.objects.filter(user_id = request.user.id)
+            serializer = IdeaSerializer(ideas, many = True)
+
+            return Response(serializer.data, status.HTTP_200_OK)
+        except ValidationError:
+            return Response({"error":"Proposal not found"},status.HTTP_404_NOT_FOUND)
