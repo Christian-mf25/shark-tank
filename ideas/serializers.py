@@ -10,5 +10,6 @@ class IdeaSerializer(serializers.Serializer):
     finished = serializers.BooleanField(read_only=True)
     createt_at = serializers.DateTimeField(read_only=True, format="%d/%m/%Y")
     deadline = serializers.DateTimeField(read_only= True, format="%d/%m/%Y")
+    is_activated = serializers.BooleanField(read_only=True)
     # user_id = UserSerializer(read_only=True)
 
