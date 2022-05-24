@@ -12,7 +12,7 @@ from .serializers import LoginSerializer
 def login(request: Request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-
+    print("estou aquiiiiiiiiiiiiiiiiiiiii")
     user = authenticate(username=serializer.validated_data["email"], password=serializer.validated_data["password"])
 
     if not user:
