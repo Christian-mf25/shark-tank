@@ -59,3 +59,6 @@ class IdeasView(APIView):
         serializer = IdeaSerializer(ideas, many= True)
 
         return Response(serializer.data, status.HTTP_200_OK)
+
+    def update(self, request:Request, idea_id =""):
+        
