@@ -11,6 +11,6 @@ class Idea(models.Model):
     amount_collected = models.IntegerField(default=0)
     finished = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    limited_date = models.DateTimeField(editable=False)
+    deadline = models.DateTimeField(editable=False)
     is_activated = models.BooleanField(default=True)
-    # user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="ideas")
+    # user_id = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="ideas")
