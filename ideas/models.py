@@ -14,3 +14,4 @@ class Idea(models.Model):
     deadline = models.DateTimeField(editable=False)
     is_activated = models.BooleanField(default=True)
     # user_id = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="ideas")
+
