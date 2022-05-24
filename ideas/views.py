@@ -1,12 +1,16 @@
 from datetime import datetime, timedelta
+from urllib import request
+
 from django.db import IntegrityError
+from django.forms import ValidationError
+from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response
-from rest_framework import status
-from ideas.models import Idea
 
-from ideas.permissions import CreateOrRead
-from ideas.serializers import IdeaSerializer
+from ideas.models import Idea
+from ideas.permissions import CreateOrRead, OwnerRead
+from ideas.serializers import IdeaSerializer, IdeaUpdateSerializer
+
 
 class IdeasView(APIView):
     authentication_classes=[TokenAuthentication]
@@ -61,4 +65,57 @@ class IdeasView(APIView):
         return Response(serializer.data, status.HTTP_200_OK)
 
     def update(self, request:Request, idea_id =""):
-        
+        serializer = IdeaUpdateSerializer(data=request.data)
+        serializer.is_valid(True)
+
+        idea = Idea.objects.filter(id=idea_id)
+        idea.first()
+        user_idea = Idea.objects.filter(id=idea_id, user_id = request.user.id)
+
+        if not idea:
+            return Response({"error":"Idea does not exists"}, status.HTTP_404_NOT_FOUND)
+
+        if not user_idea:
+            return Response({"error":"You can't perform this action"}, status.HTTP_401_UNAUTHORIZED)
+
+        if "is_activated" in request.data:
+            if not request.data["is_activated"]:
+                if idea[0].amount_collected > 0:
+                    return Response({"error":"This proposal have investments. Can't be deactivated"}, status.HTTP_401_UNAUTHORIZED)
+                else:
+                    idea.update(**serializer.validated_data)
+                    serializer = IdeaSerializer(idea[0])
+                    return Response(serializer.data, status.HTTP_200_OK)
+            else:
+                this_idea = Idea.objects.filter(is_activated=True, user_id = request.user.id, id = idea_id)
+                if this_idea:
+                    return Response({"message":"This proposal is already activated"}, status.HTTP_200_OK)
+                activated_idea = Idea.objects.filter(is_activated = True, user_id = request.user.id)
+                if activated_idea:
+                    return Response({"message":"Already have an active proposal"}, status.HTTP_401_UNAUTHORIZED)
+                else :
+                    idea.update(**serializer.validated_data)
+                    serializer = IdeaSerializer(idea[0])
+                    return Response(serializer.data, status.HTTP_200_OK)
+        idea.update(**serializer.validated_data)
+        serializer = IdeaSerializer(idea[0])
+        return Response(serializer.data, status.HTTP_200_OK)
+
+class IdeaOwnerView(APIView):
+    authentication_classes=[TokenAuthentication]
+    permission_classes=[OwnerRead]
+    def get(self, request:Request, idea_id=""):
+        try:
+            if idea_id:
+                idea = Idea.objects.filter(id = idea_id, user_id= request.user.id).first()
+                if not idea:
+                    return Response({"error":"Proposal not found"},status.HTTP_404_NOT_FOUND)
+                serializer = IdeaSerializer(idea)
+                return Response(serializer.data, status.HTTP_200_OK)
+
+            ideas = Idea.objects.filter(user_id = request.user.id)
+            serializer = IdeaSerializer(ideas, many = True)
+
+            return Response(serializer.data, status.HTTP_200_OK)
+        except ValidationError:
+            return Response({"error":"Proposal not found"},status.HTTP_404_NOT_FOUND)
