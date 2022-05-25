@@ -21,7 +21,9 @@ class UserView(ListCreateAPIView):
 def login(request: Request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = authenticate(username=serializer.validated_data["email"], password=serializer.validated_data["password"])
+    user = authenticate(
+        username=serializer.validated_data["email"].lower(), password=serializer.validated_data["password"]
+    )
 
     if not user:
         return Response({"message": "Invalid password or e-mail address"}, status.HTTP_401_UNAUTHORIZED)
