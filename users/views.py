@@ -8,12 +8,15 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .models import User
+from .permissions import IsSuperuser
 from .serializers import LoginSerializer, UserSerializer
 
 
 class UserView(ListCreateAPIView):
     authenticate_classes = [TokenAuthentication]
+    permission_classes = [IsSuperuser]
     queryset = User.objects.all()
+
     serializer_class = UserSerializer
 
 
