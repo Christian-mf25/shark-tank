@@ -34,6 +34,13 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password, **kwargs):
         kwargs.setdefault("is_staff", True)
         kwargs.setdefault("is_superuser", True)
+        
+        if kwargs.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True")
+
+        if kwargs.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True")
+        
         return self._create_user(email, password, **kwargs)
 
 
@@ -46,6 +53,6 @@ class User(AbstractUser):
     is_inv = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ["name"]
 
     objects = UserManager()
