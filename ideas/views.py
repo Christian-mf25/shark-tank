@@ -99,6 +99,25 @@ class IdeasView(APIView):
         serializer = IdeaSerializer(idea[0])
         return Response(serializer.data, status.HTTP_200_OK)
 
+    def delete(self, request:Request, idea_id=""):
+
+        idea = Idea.objects.filter(id=idea_id)
+        idea.first()
+        user_idea = Idea.objects.filter(id=idea_id, user_id = request.user.id)
+
+        if not idea:
+            return Response({"error":"Idea does not exists"}, status.HTTP_404_NOT_FOUND)
+
+        if not user_idea:
+            return Response({"error":"You can't perform this action"}, status.HTTP_401_UNAUTHORIZED)
+        
+        if idea[0].amount_collected > 0:
+            return Response({"error":"This proposal have investments. Can't be deleted"}, status.HTTP_401_UNAUTHORIZED)
+
+        idea.delete()
+        
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 class IdeaOwnerView(APIView):
     authentication_classes=[TokenAuthentication]
     permission_classes=[OwnerRead]
