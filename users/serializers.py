@@ -7,7 +7,7 @@ from users.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("uuid", "name", "email", "password", "phone", "is_inv")
+        fields = ("uuid", "name", "email", "password", "phone", "is_inv", "is_superuser")
         extra_kwargs = {"uuid": {"read_only": True}, "password": {"write_only": True}}
 
     def validate(self, attrs):
