@@ -1,16 +1,17 @@
 from capstone.exceptions import CustomException
 from rest_framework import serializers
 
-from .models import User
+from users.models import User
 
 
-class UserSerilizer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("id", "name", "email", "password", "phone", "is_inv")
-        extra_kwargs = {"id": {"read_only": True}, "password": {"write_only": True}}
+        model = User
+        fields = ("uuid", "name", "email", "password", "phone", "is_inv")
+        extra_kwargs = {"uuid": {"read_only": True}, "password": {"write_only": True}}
 
         def validate(self, attrs):
-            user: User = self.context["request"].users
+            user: User = self.context["request"].user
             attrs["name"] = attrs["name"].title()
             attrs["email"] = attrs["email"].swapcase()
 

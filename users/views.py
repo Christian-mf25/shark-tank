@@ -1,11 +1,20 @@
 from django.contrib.auth import authenticate
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .serializers import LoginSerializer
+from .models import User
+from .serializers import LoginSerializer, UserSerializer
+
+
+class UserView(ListCreateAPIView):
+    authenticate_classes = [TokenAuthentication]
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 @api_view(["POST"])
