@@ -29,7 +29,7 @@ class IdeasView(APIView):
         return Response(serializer.data)
 
     
-    def get(self, _:Request, idea_id=""):
+    def get(self, request:Request, idea_id=""):
         if idea_id:
             idea= Idea.objects.filter(id = idea_id)
             idea.first()
@@ -40,23 +40,20 @@ class IdeasView(APIView):
             now = datetime.now()
             if str(now) > str(idea[0].limited_date)[:-6] and idea[0].finished == False:
                 idea.update(amount_collected=0, limited_date = datetime.now()+timedelta(days=1))
-                # investments= Investment.objects.filter(idea_id=idea[0].id)
-                # investments.delete()
-               
             
             serializer = IdeaSerializer(idea[0])
             return Response(serializer.data, status.HTTP_200_OK)
                
         ideas = Idea.objects.filter(is_activated=True).all()
+        if request.user.is_adm:
+            ideas = Idea.objects.all()
+            
         for ea_idea in ideas:
             now = datetime.now()  
             idea = Idea.objects.filter(id = ea_idea.id)
             idea.first()
             if str(now) > str(ea_idea.limited_date)[:-6] and ea_idea.finished == False:
                 idea.update(amount_collected=0, limited_date= datetime.now()+timedelta(days=1))
-                # investments = Investment.objects.filter(idea_id=ea_idea.id)
-                # investments.delete()
-            
 
         serializer = IdeaSerializer(ideas, many= True)
 
