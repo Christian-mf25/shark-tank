@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
-from urllib import request
 
-from django.db import IntegrityError
 from django.forms import ValidationError
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
