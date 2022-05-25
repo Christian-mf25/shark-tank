@@ -8,12 +8,15 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .models import User
+from .permissions import IsSuperuser
 from .serializers import LoginSerializer, UserSerializer
 
 
 class UserView(ListCreateAPIView):
     authenticate_classes = [TokenAuthentication]
+    permission_classes = [IsSuperuser]
     queryset = User.objects.all()
+
     serializer_class = UserSerializer
 
 
@@ -21,7 +24,9 @@ class UserView(ListCreateAPIView):
 def login(request: Request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    user = authenticate(username=serializer.validated_data["email"], password=serializer.validated_data["password"])
+    user = authenticate(
+        username=serializer.validated_data["email"].lower(), password=serializer.validated_data["password"]
+    )
 
     if not user:
         return Response({"message": "Invalid password or e-mail address"}, status.HTTP_401_UNAUTHORIZED)
