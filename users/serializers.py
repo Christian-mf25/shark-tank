@@ -1,4 +1,5 @@
 from re import fullmatch
+from django.forms import CharField
 
 from rest_framework import serializers
 
@@ -46,6 +47,21 @@ class UserSerializer(serializers.ModelSerializer):
             return User.objects.create_superuser(**validated_data)
         return User.objects.create_user(**validated_data)
 
+class UserInvestmetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        
+        fields = (
+            "name",
+            "email",
+        )
+        
+        extra_kwargs = {
+            "uuid": {"read_only": True},
+            "password": {"write_only": True},
+            "username": {"write_only": True},
+            "is_inv": {"required": False, "default": False},
+        }
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
