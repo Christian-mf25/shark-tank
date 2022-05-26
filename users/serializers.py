@@ -1,4 +1,5 @@
 from re import fullmatch
+from django.forms import CharField
 
 from capstone.exceptions import CustomException
 from rest_framework import serializers
@@ -46,6 +47,14 @@ class UserSerializer(serializers.ModelSerializer):
             return User.objects.create_superuser(**validated_data)
         return User.objects.create_user(**validated_data)
 
+class UserInvestmetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        
+        fields = (
+            "name",
+            "email",
+        )
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)

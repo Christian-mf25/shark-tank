@@ -8,7 +8,10 @@ from users.models import User
 
 from ideas.models import Idea
 from ideas.permissions import CreateOrRead, OwnerRead
-from ideas.serializers import IdeaSerializer, IdeaUpdateSerializer
+from ideas.serializers import IdeaInvestmentsSerializer, IdeaSerializer, IdeaUpdateSerializer
+from investments.models import Investment
+from users.models import User
+
 
 
 class IdeasView(APIView):
@@ -40,6 +43,8 @@ class IdeasView(APIView):
         if idea_id:
             idea = Idea.objects.filter(id=idea_id)
             idea.first()
+            idea_investments= Investment.objects.filter(idea_id = idea[0].id).all()
+            print(idea_investments)
             if not idea:
                 return Response({"error": "Idea is not found"}, status.HTTP_404_NOT_FOUND)
             if not request.user.is_superuser:
@@ -139,11 +144,19 @@ class IdeaOwnerView(APIView):
                 idea.first()
                 if not idea:
                     return Response({"error": "Proposal not found"}, status.HTTP_404_NOT_FOUND)
+
+                idea_investments= Investment.objects.filter(idea_id = idea[0].id).all()
+    
+                serializer_idea_investment = IdeaInvestmentsSerializer(idea_investments, many= True)
+                
+                print(serializer_idea_investment)
+
+
                 now = datetime.now()
                 if str(now) > str(idea[0].deadline)[:-6] and idea[0].finished == False:
                     idea.update(amount_collected=0, deadline = datetime.now()+timedelta(days=1))
                 serializer = IdeaSerializer(idea[0])
-                return Response(serializer.data, status.HTTP_200_OK)
+                return Response({"idea":serializer.data, "investors":serializer_idea_investment.data}, status.HTTP_200_OK)
 
             ideas = Idea.objects.filter(user_id=request.user.uuid).all()
             for ea_idea in ideas:
