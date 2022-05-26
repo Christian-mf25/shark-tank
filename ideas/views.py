@@ -4,11 +4,11 @@ from django.forms import ValidationError
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response
-from users.models import User
 
 from ideas.models import Idea
 from ideas.permissions import CreateOrRead, OwnerRead
 from ideas.serializers import IdeaSerializer, IdeaUpdateSerializer
+from users.models import User
 
 
 class IdeasView(APIView):
@@ -42,7 +42,7 @@ class IdeasView(APIView):
             idea.first()
             if not idea:
                 return Response({"error": "Idea is not found"}, status.HTTP_404_NOT_FOUND)
-            if not request.user.is_adm:
+            if not request.user.is_superuser:
                 if not idea[0].is_activated:
                     return Response({"message": "This proposal is not activated"}, status.HTTP_422_UNPROCESSABLE_ENTITY)
             now = datetime.now()
@@ -53,7 +53,7 @@ class IdeasView(APIView):
             return Response(serializer.data, status.HTTP_200_OK)
 
         ideas = Idea.objects.filter(is_activated=True).all()
-        if request.user.is_adm:
+        if request.user.is_superuser:
             ideas = Idea.objects.all()
 
         for ea_idea in ideas:
