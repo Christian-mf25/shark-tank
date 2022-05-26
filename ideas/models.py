@@ -13,4 +13,4 @@ class Idea(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     deadline = models.DateTimeField(editable=False)
     is_activated = models.BooleanField(default=True)
-    user_id = models.ForeignKey("users.User", on_delete=models.PROTECT, related_name="ideas")
+    user_id= models.ForeignKey("users.User", on_delete=models.PROTECT, related_name="ideas")
