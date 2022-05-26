@@ -22,6 +22,7 @@ class UserView(ListCreateAPIView):
 
 class UserDetailsView(RetrieveUpdateDestroyAPIView):
     authentication_classes = [TokenAuthentication]
+    permission_classes = [UserRoutesPermissions]
     queryset = User.objects
     serializer_class = UserSerializer
     lookup_field = "uuid"
