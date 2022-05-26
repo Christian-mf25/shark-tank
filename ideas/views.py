@@ -67,7 +67,7 @@ class IdeasView(APIView):
 
         return Response(serializer.data, status.HTTP_200_OK)
 
-    def update(self, request: Request, idea_id=""):
+    def patch(self, request: Request, idea_id=""):
         serializer = IdeaUpdateSerializer(data=request.data)
         serializer.is_valid(True)
 
@@ -140,8 +140,8 @@ class IdeaOwnerView(APIView):
                 if not idea:
                     return Response({"error": "Proposal not found"}, status.HTTP_404_NOT_FOUND)
                 now = datetime.now()
-                if str(now) > str(idea[0].limited_date)[:-6] and idea[0].finished == False:
-                    idea.update(amount_collected=0, limited_date = datetime.now()+timedelta(days=1))
+                if str(now) > str(idea[0].deadline)[:-6] and idea[0].finished == False:
+                    idea.update(amount_collected=0, deadline = datetime.now()+timedelta(days=1))
                 serializer = IdeaSerializer(idea[0])
                 return Response(serializer.data, status.HTTP_200_OK)
 
@@ -150,8 +150,8 @@ class IdeaOwnerView(APIView):
                 now = datetime.now()  
                 idea = Idea.objects.filter(id = ea_idea.id)
                 idea.first()
-                if str(now) > str(ea_idea.limited_date)[:-6] and ea_idea.finished == False:
-                    idea.update(amount_collected=0, limited_date= datetime.now()+timedelta(days=1))
+                if str(now) > str(ea_idea.deadline)[:-6] and ea_idea.finished == False:
+                    idea.update(amount_collected=0, deadline= datetime.now()+timedelta(days=1))
             serializer = IdeaSerializer(ideas, many=True)
 
             return Response(serializer.data, status.HTTP_200_OK)
