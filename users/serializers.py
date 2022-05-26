@@ -55,13 +55,6 @@ class UserInvestmetSerializer(serializers.ModelSerializer):
             "name",
             "email",
         )
-        
-        extra_kwargs = {
-            "uuid": {"read_only": True},
-            "password": {"write_only": True},
-            "username": {"write_only": True},
-            "is_inv": {"required": False, "default": False},
-        }
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
