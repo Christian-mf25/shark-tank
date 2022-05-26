@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from users.serializers import UserSerializer
+from users.serializers import UserInvestmetSerializer, UserSerializer
 
 
 class IdeaSerializer(serializers.Serializer):
@@ -21,3 +21,7 @@ class IdeaUpdateSerializer(serializers.Serializer):
     description = serializers.CharField(required=False)
     value = serializers.IntegerField(required=False)
     is_activated = serializers.BooleanField(required=False)
+
+class IdeaInvestmentsSerializer(serializers.Serializer):
+    user = UserInvestmetSerializer()
+    value = serializers.IntegerField()
