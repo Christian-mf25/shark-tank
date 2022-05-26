@@ -134,13 +134,23 @@ class IdeaOwnerView(APIView):
     def get(self, request: Request, idea_id=""):
         try:
             if idea_id:
-                idea = Idea.objects.filter(id=idea_id, user_id=request.user.uuid).first()
+                idea = Idea.objects.filter(id=idea_id, user_id=request.user.uuid)
+                idea.first()
                 if not idea:
                     return Response({"error": "Proposal not found"}, status.HTTP_404_NOT_FOUND)
-                serializer = IdeaSerializer(idea)
+                now = datetime.now()
+                if str(now) > str(idea[0].limited_date)[:-6] and idea[0].finished == False:
+                    idea.update(amount_collected=0, limited_date = datetime.now()+timedelta(days=1))
+                serializer = IdeaSerializer(idea[0])
                 return Response(serializer.data, status.HTTP_200_OK)
 
-            ideas = Idea.objects.filter(user_id=request.user.uuid)
+            ideas = Idea.objects.filter(user_id=request.user.uuid).all()
+            for ea_idea in ideas:
+                now = datetime.now()  
+                idea = Idea.objects.filter(id = ea_idea.id)
+                idea.first()
+                if str(now) > str(ea_idea.limited_date)[:-6] and ea_idea.finished == False:
+                    idea.update(amount_collected=0, limited_date= datetime.now()+timedelta(days=1))
             serializer = IdeaSerializer(ideas, many=True)
 
             return Response(serializer.data, status.HTTP_200_OK)
