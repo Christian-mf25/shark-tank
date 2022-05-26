@@ -1,9 +1,9 @@
 from re import fullmatch
 from django.forms import CharField
 
+from capstone.exceptions import CustomException
 from rest_framework import serializers
 
-from capstone.exceptions import CustomException
 from users.models import User
 
 
