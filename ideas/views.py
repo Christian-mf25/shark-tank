@@ -42,8 +42,9 @@ class IdeasView(APIView):
             idea.first()
             if not idea:
                 return Response({"error": "Idea is not found"}, status.HTTP_404_NOT_FOUND)
-            if not idea[0].is_activated:
-                return Response({"message": "This proposal is not activated"}, status.HTTP_422_UNPROCESSABLE_ENTITY)
+            if not request.user.is_adm:
+                if not idea[0].is_activated:
+                    return Response({"message": "This proposal is not activated"}, status.HTTP_422_UNPROCESSABLE_ENTITY)
             now = datetime.now()
             if str(now) > str(idea[0].deadline)[:-6] and idea[0].finished == False:
                 idea.update(amount_collected=0, deadline=datetime.now() + timedelta(days=1))
