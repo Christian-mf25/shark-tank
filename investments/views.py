@@ -1,4 +1,5 @@
 from ideas.models import Idea
+from ideas.serializers import IdeaSerializer
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -21,28 +22,29 @@ class InvestmentsView(APIView):
     def post(self, request: Request):
         serializer = InvestmentSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        idea = Idea.objects.filter(id=serializer.idea_id).first()
+        idea = Idea.objects.filter(id=serializer.data["idea_id"])
+        # serializer.validated_data.pop("idea_id")
+        print("serializeeeeerrr ->", serializer.validated_data)
 
-        if not idea:
+        if not idea[0]:
             return Response({"error": "idea not found."}, HTTP_404_NOT_FOUND)
 
-        if not idea.is_activated:
+        if not idea[0].is_activated:
             return Response({"error": "idea not active."}, HTTP_422_UNPROCESSABLE_ENTITY)
 
-        collected_plus_investment = serializer["value"] + idea["value"]
-        if collected_plus_investment > idea["value"]:
+        collected_plus_investment = serializer.data["value"] + idea[0].amount_collected
+        if collected_plus_investment > idea[0].value:
             return Response(
-                {"error": f"can not invest more than {idea.value - idea.amount_collected}"},
+                {"error": f"can not invest more than {idea[0].value - idea[0].amount_collected}"},
                 HTTP_422_UNPROCESSABLE_ENTITY,
             )
+        idea.update(amount_collected=idea[0].amount_collected + request.data["value"])
 
-        idea.amount_collected += serializer["value"]
-        idea.save()
-
-        serializer["percentage"] = (serializer["value"] * 100) / idea["value"]
-        serializer["user_id"] = request.user.id
-
-        investment = Investment.objects.create(**serializer.validated_data)
+        investment = Investment.objects.create(
+            **serializer.validated_data,
+            percentage=(serializer.data["value"] * 100) / idea[0].value,
+            user_id=request.user.uuid,
+        )
 
         serializer = InvestmentSerializer(investment)
 
