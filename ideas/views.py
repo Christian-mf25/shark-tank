@@ -50,7 +50,8 @@ class IdeasView(APIView):
             now = datetime.now()
             if str(now) > str(idea[0].deadline)[:-6] and idea[0].finished == False:
                 idea.update(amount_collected=0, deadline=datetime.now() + timedelta(days=1))
-
+                investments= Investment.objects.filter(idea_id=idea[0].id)
+                investments.delete()
             serializer = IdeaSerializer(idea[0], request.user)
             return Response(serializer.data, status.HTTP_200_OK)
 
@@ -64,7 +65,8 @@ class IdeasView(APIView):
             idea.first()
             if str(now) > str(ea_idea.deadline)[:-6] and ea_idea.finished == False:
                 idea.update(amount_collected=0, deadline=datetime.now() + timedelta(days=1))
-
+                investments = Investment.objects.filter(idea_id=ea_idea.id)
+                investments.delete()
         serializer = IdeaSerializer(ideas, many=True)
 
         return Response(serializer.data, status.HTTP_200_OK)
@@ -124,7 +126,8 @@ class IdeasView(APIView):
             return Response(
                 {"error": "This proposal have investments. Can't be deleted"}, status.HTTP_401_UNAUTHORIZED
             )
-
+        investments = Investment.objects.filter(idea_id=idea_id)
+        investments.delete()
         idea.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
