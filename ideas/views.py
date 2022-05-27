@@ -25,7 +25,6 @@ class IdeasView(APIView):
         
         userIdeas = Idea.objects.filter(user_id=request.user.uuid).all()
         user = User.objects.get(uuid=request.user.uuid)
-        print("\n\n\n", user.uuid, "\n\n\n")
         activated_idea = True
         for ea_idea in userIdeas:
             if ea_idea.is_activated:
