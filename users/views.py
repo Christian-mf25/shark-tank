@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from ideas import serializers
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -27,26 +28,27 @@ class UserDetailsView(RetrieveUpdateDestroyAPIView):
     serializer_class = UserSerializer
     lookup_field = "uuid"
 
+    def get(self, request, *args, **kwargs):
+        if not self.request.user.is_superuser:
+            serializer = self.get_serializer(request.user)
+            return Response(serializer.data, 200)
+
+        return super().get(request, *args, **kwargs)
+
 
 @api_view(["POST"])
 def login(request: Request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    
+
     user = authenticate(
         username=serializer.validated_data["email"],
         password=serializer.validated_data["password"],
     )
 
     if not user:
-        return Response({
-            "message": "Invalid password or e-mail address"},
-            status.HTTP_401_UNAUTHORIZED
-        )
+        return Response({"message": "Invalid password or e-mail address"}, status.HTTP_401_UNAUTHORIZED)
 
     token, _ = Token.objects.get_or_create(user=user)
 
-    return Response(
-        {"token": token.key},
-        status.HTTP_200_OK
-    )
+    return Response({"token": token.key}, status.HTTP_200_OK)
