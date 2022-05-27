@@ -24,6 +24,7 @@ class IdeasView(APIView):
         serializer = IdeaSerializer(data=request.data)
         serializer.is_valid(True)
 
+        
         userIdeas = Idea.objects.filter(user_id=request.user.uuid).all()
         user = User.objects.get(uuid=request.user.uuid)
         activated_idea = True
