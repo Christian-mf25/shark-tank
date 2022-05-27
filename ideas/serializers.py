@@ -9,16 +9,16 @@ class IdeaSerializer(serializers.Serializer):
     value = serializers.IntegerField()
     amount_collected = serializers.IntegerField(read_only=True)
     finished = serializers.BooleanField(read_only=True)
-    createt_at = serializers.DateTimeField(read_only=True, format="%d/%m/%Y")
+    created_at = serializers.DateTimeField(read_only=True, format="%d/%m/%Y")
     deadline = serializers.DateTimeField(read_only=True, format="%d/%m/%Y")
     is_activated = serializers.BooleanField(read_only=True)
-    user_id = serializers.UUIDField(read_only=True)
+    user_id = UserInvestmetSerializer(read_only=True)
 
 
 class IdeaUpdateSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     description = serializers.CharField(required=False)
-    value = serializers.IntegerField(required=False)
+    # value = serializers.IntegerField(required=False)
     is_activated = serializers.BooleanField(required=False)
 
 

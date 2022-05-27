@@ -8,20 +8,21 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .models import User
-from .permissions import IsSuperuser
+from .permissions import UserRoutesPermissions
 from .serializers import LoginSerializer, UserSerializer
 
 
 class UserView(ListCreateAPIView):
-    authenticate_classes = [TokenAuthentication]
-    permission_classes = [IsSuperuser]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [UserRoutesPermissions]
     queryset = User.objects.all()
 
     serializer_class = UserSerializer
 
 
 class UserDetailsView(RetrieveUpdateDestroyAPIView):
-    authenticate_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [UserRoutesPermissions]
     queryset = User.objects
     serializer_class = UserSerializer
     lookup_field = "uuid"
@@ -31,13 +32,21 @@ class UserDetailsView(RetrieveUpdateDestroyAPIView):
 def login(request: Request):
     serializer = LoginSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    
     user = authenticate(
-        username=serializer.validated_data["email"].lower(), password=serializer.validated_data["password"]
+        username=serializer.validated_data["email"],
+        password=serializer.validated_data["password"],
     )
 
     if not user:
-        return Response({"message": "Invalid password or e-mail address"}, status.HTTP_401_UNAUTHORIZED)
+        return Response({
+            "message": "Invalid password or e-mail address"},
+            status.HTTP_401_UNAUTHORIZED
+        )
 
     token, _ = Token.objects.get_or_create(user=user)
 
-    return Response({"token": token.key}, status.HTTP_200_OK)
+    return Response(
+        {"token": token.key},
+        status.HTTP_200_OK
+    )
