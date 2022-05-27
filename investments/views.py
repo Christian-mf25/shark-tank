@@ -11,13 +11,13 @@ from rest_framework.status import (
 from rest_framework.views import APIView
 
 from investments.models import Investment
-from investments.permissions import IsInvestor
+from investments.permissions import IsInvestorOrSuperuser
 from investments.serializers import InvestmentSerializer
 
 
 class InvestmentsView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsInvestor]
+    permission_classes = [IsInvestorOrSuperuser]
 
     def post(self, request: Request):
         serializer = InvestmentSerializer(data=request.data)
@@ -52,3 +52,13 @@ class InvestmentsView(APIView):
         serializer = InvestmentSerializer(investment)
 
         return Response(serializer.data, HTTP_201_CREATED)
+
+    def get(self, request: Request):
+        investments = Investment.objects.filter(user_id=request.user.uuid)
+
+        if request.user.is_superuser:
+            investments = Investment.objects.all()
+
+        serializer = InvestmentSerializer(investments, many=True)
+
+        return Response(serializer.data, HTTP_200_OK)
