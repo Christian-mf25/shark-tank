@@ -22,8 +22,10 @@ class IdeasView(APIView):
         serializer = IdeaSerializer(data=request.data)
         serializer.is_valid(True)
 
+        
         userIdeas = Idea.objects.filter(user_id=request.user.uuid).all()
         user = User.objects.get(uuid=request.user.uuid)
+        print("\n\n\n", user.uuid, "\n\n\n")
         activated_idea = True
         for ea_idea in userIdeas:
             if ea_idea.is_activated:
@@ -32,7 +34,7 @@ class IdeasView(APIView):
         idea = Idea.objects.create(
             **serializer.validated_data,
             deadline=datetime.now() + timedelta(days=1),
-            user_id=user,
+            user_id=user.uuid,
             is_activated=activated_idea
         )
 
