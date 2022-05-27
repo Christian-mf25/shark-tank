@@ -1,5 +1,4 @@
 from re import fullmatch
-from django.forms import CharField
 
 from capstone.exceptions import CustomException
 from django.db import IntegrityError
@@ -11,19 +10,9 @@ from users.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        
-        fields = (
-            "uuid",
-            "name",
-            "username",
-            "email",
-            "phone",
-            "password",
-            "is_inv",
-            "is_superuser",
-            "is_staff"
-        )
-        
+
+        fields = ("uuid", "name", "username", "email", "phone", "password", "is_inv", "is_superuser", "is_staff")
+
         extra_kwargs = {
             "uuid": {"read_only": True},
             "password": {"write_only": True},
@@ -41,9 +30,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         try:
-            
+
             user: User = self.context["request"].user
-            
+
             valid_phone_regex = "(\(?\d{2}\)?)?(\d{4,5}\-\d{4})"
             validated_phone = fullmatch(valid_phone_regex, validated_data["phone"])
 
@@ -53,19 +42,20 @@ class UserSerializer(serializers.ModelSerializer):
             if validated_data.get("is_superuser", False) and (user.is_authenticated and user.is_superuser):
                 return User.objects.create_superuser(**validated_data)
             return User.objects.create_user(**validated_data)
-        
+
         except IntegrityError as e:
             raise CustomException("E-mail already exists", 422)
-            
+
 
 class UserInvestmetSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        
+
         fields = (
             "name",
             "email",
         )
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
