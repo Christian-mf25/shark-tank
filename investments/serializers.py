@@ -1,5 +1,6 @@
-from ideas.serializers import IdeaSerializer
 from rest_framework import serializers
+
+from ideas.serializers import IdeaSerializer
 from users.serializers import UserSerializer
 
 

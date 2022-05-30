@@ -1,19 +1,16 @@
 from datetime import datetime, timedelta
 
 from django.forms import ValidationError
-from investments.models import Investment
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response
-from users.models import User
 
 from ideas.models import Idea
 from ideas.permissions import CreateOrRead, OwnerRead
-from ideas.serializers import (
-    IdeaInvestmentsSerializer,
-    IdeaSerializer,
-    IdeaUpdateSerializer,
-)
+from ideas.serializers import (IdeaInvestmentsSerializer, IdeaSerializer,
+                               IdeaUpdateSerializer)
+from investments.models import Investment
+from users.models import User
 
 
 class IdeasView(APIView):
