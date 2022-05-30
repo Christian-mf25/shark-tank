@@ -1,5 +1,5 @@
+from capstone.pagination import Pagination
 from django.contrib.auth import authenticate
-from ideas import serializers
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -19,7 +19,11 @@ class UserView(ListCreateAPIView):
     queryset = User.objects.all()
 
     serializer_class = UserSerializer
-
+    pagination_class = Pagination
+    
+    def paginate_queryset(self, queryset):
+        return super().paginate_queryset(queryset)
+    
 
 class UserDetailsView(RetrieveUpdateDestroyAPIView):
     authentication_classes = [TokenAuthentication]
