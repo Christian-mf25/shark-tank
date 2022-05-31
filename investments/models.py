@@ -7,5 +7,6 @@ class Investment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     value = models.IntegerField()
     percentage = models.FloatField()
-    idea = models.ForeignKey("ideas.Idea", on_delete=models.PROTECT)
-    user = models.ForeignKey("users.User", on_delete=models.PROTECT)
+    is_activated = models.BooleanField(default=True)
+    idea = models.ForeignKey("ideas.Idea", on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)

@@ -51,7 +51,7 @@ class InvestmentsView(APIView):
         return Response(serializer.data, HTTP_201_CREATED)
 
     def get(self, request: Request):
-        investments = Investment.objects.filter(user_id=request.user.uuid)
+        investments = Investment.objects.filter(user_id=request.user.uuid, is_activated=True)
 
         if request.user.is_superuser:
             investments = Investment.objects.all()
