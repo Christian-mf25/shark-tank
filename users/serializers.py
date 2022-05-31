@@ -1,9 +1,9 @@
 from re import fullmatch
 
-from capstone.exceptions import CustomException
 from django.db import IntegrityError
 from rest_framework import serializers
 
+from capstone.exceptions import CustomException
 from users.models import User
 
 
