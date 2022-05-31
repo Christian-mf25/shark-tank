@@ -1,19 +1,16 @@
 from datetime import datetime, timedelta
 
 from django.forms import ValidationError
-from investments.models import Investment
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.views import APIView, Request, Response
-from users.models import User
 
 from ideas.models import Idea
 from ideas.permissions import CreateOrRead, OwnerRead
-from ideas.serializers import (
-    IdeaInvestmentsSerializer,
-    IdeaSerializer,
-    IdeaUpdateSerializer,
-)
+from ideas.serializers import (IdeaInvestmentsSerializer, IdeaSerializer,
+                               IdeaUpdateSerializer)
+from investments.models import Investment
+from users.models import User
 
 
 class IdeasView(APIView):
@@ -24,7 +21,6 @@ class IdeasView(APIView):
         serializer = IdeaSerializer(data=request.data)
         serializer.is_valid(True)
 
-        
         userIdeas = Idea.objects.filter(user_id=request.user.uuid).all()
         user = User.objects.get(uuid=request.user.uuid)
         activated_idea = True
@@ -45,24 +41,22 @@ class IdeasView(APIView):
 
     def get(self, request: Request, idea_id=""):
         if idea_id:
-            idea = Idea.objects.filter(id=idea_id)
+            idea = Idea.objects.filter(id=idea_id, is_deleted = False)
             idea.first()
             if not idea:
                 return Response({"error": "Idea is not found"}, status.HTTP_404_NOT_FOUND)
             if not request.user.is_superuser:
                 if not idea[0].is_activated:
-                    return Response(
-                        {"message": "This proposal is not activated"}, status.HTTP_422_UNPROCESSABLE_ENTITY
-                    )
+                    return Response({"message": "This Idea is not activated"}, status.HTTP_422_UNPROCESSABLE_ENTITY)
             now = datetime.now()
             if str(now) > str(idea[0].deadline)[:-6] and idea[0].finished == False:
                 idea.update(amount_collected=0, deadline=datetime.now() + timedelta(days=1))
                 investments = Investment.objects.filter(idea_id=idea[0].id)
-                investments.delete()
-            serializer = IdeaSerializer(idea[0], request.user)
+                investments.update(is_activated=False)
+            serializer = IdeaSerializer(idea[0])
             return Response(serializer.data, status.HTTP_200_OK)
 
-        ideas = Idea.objects.filter(is_activated=True).all()
+        ideas = Idea.objects.filter(is_activated=True, is_deleted = False).all()
         if request.user.is_superuser:
             ideas = Idea.objects.all()
 
@@ -73,7 +67,7 @@ class IdeasView(APIView):
             if str(now) > str(ea_idea.deadline)[:-6] and ea_idea.finished == False:
                 idea.update(amount_collected=0, deadline=datetime.now() + timedelta(days=1))
                 investments = Investment.objects.filter(idea_id=ea_idea.id)
-                investments.delete()
+                investments.update(is_activated=False)
         serializer = IdeaSerializer(ideas, many=True)
 
         return Response(serializer.data, status.HTTP_200_OK)
@@ -134,8 +128,8 @@ class IdeasView(APIView):
                 {"error": "This proposal have investments. Can't be deleted"}, status.HTTP_401_UNAUTHORIZED
             )
         investments = Investment.objects.filter(idea_id=idea_id)
-        investments.delete()
-        idea.delete()
+        investments.update(is_activated=False)
+        idea.update(is_deleted = True)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -147,12 +141,12 @@ class IdeaOwnerView(APIView):
     def get(self, request: Request, idea_id=""):
         try:
             if idea_id:
-                idea = Idea.objects.filter(id=idea_id, user_id=request.user.uuid)
+                idea = Idea.objects.filter(id=idea_id, user_id=request.user.uuid, is_deleted=False)
                 idea.first()
                 if not idea:
-                    return Response({"error": "Proposal not found"}, status.HTTP_404_NOT_FOUND)
+                    return Response({"error": "Idea not found"}, status.HTTP_404_NOT_FOUND)
 
-                idea_investments = Investment.objects.filter(idea_id=idea[0].id).all()
+                idea_investments = Investment.objects.filter(idea_id=idea[0].id, is_activated=True).all()
 
                 serializer_idea_investment = IdeaInvestmentsSerializer(idea_investments, many=True)
 
@@ -160,14 +154,14 @@ class IdeaOwnerView(APIView):
                 if str(now) > str(idea[0].deadline)[:-6] and idea[0].finished == False:
                     idea.update(amount_collected=0, deadline=datetime.now() + timedelta(days=1))
                     investments = Investment.objects.filter(idea_id=idea[0].id)
-                    investments.delete()
+                    investments.update(is_activated=False)
 
                 serializer = IdeaSerializer(idea[0])
                 return Response(
                     {"idea": serializer.data, "investors": serializer_idea_investment.data}, status.HTTP_200_OK
                 )
 
-            ideas = Idea.objects.filter(user_id=request.user.uuid).all()
+            ideas = Idea.objects.filter(user_id=request.user.uuid, is_deleted=False).all()
             for ea_idea in ideas:
                 now = datetime.now()
                 idea = Idea.objects.filter(id=ea_idea.id)
@@ -175,7 +169,7 @@ class IdeaOwnerView(APIView):
                 if str(now) > str(ea_idea.deadline)[:-6] and ea_idea.finished == False:
                     idea.update(amount_collected=0, deadline=datetime.now() + timedelta(days=1))
                     investments = Investment.objects.filter(idea_id=ea_idea.id)
-                    investments.delete()
+                    investments.update(is_activated=False)
 
             serializer = IdeaSerializer(ideas, many=True)
 
