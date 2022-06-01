@@ -7,9 +7,10 @@ class UserRoutesPermissions(BasePermission):
     def has_permission(self, request: Request, _):
         if request.method == 'PATCH':
             if str(request.user.uuid) == str(request.build_absolute_uri()[32:-1]):
-                print(request.data)
+                if request.data["is_superuser"] and not request.user.is_superuser:
+                    raise PermissionDenied("Only admin can create or update a superuser.")
                 request.data["is_superuser"] = request.user.is_superuser
-                return True     
+                return True
             
         methods = ("POST", "PATCH")
         if request.method in methods:
