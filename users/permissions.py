@@ -9,8 +9,6 @@ class UserRoutesPermissions(BasePermission):
             if str(request.user.uuid) == str(request.build_absolute_uri()[32:-1]):
                 print(request.data)
                 request.data["is_superuser"] = request.user.is_superuser
-                print(request.data)
-                print("*"*30)
                 return True     
             
         methods = ("POST", "PATCH")

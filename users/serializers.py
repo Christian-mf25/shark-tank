@@ -49,17 +49,16 @@ class UserSerializer(serializers.ModelSerializer):
             if validated_data.get("phone"):
                 valid_phone_regex = "(\(?\d{2}\)?)?(\d{4,5}\-\d{4})"
                 validated_phone = fullmatch(valid_phone_regex, validated_data["phone"])
-            print(validated_data, ' <<---===/// ')
             if validated_data.get("email", None):
                 validated_data["email"] = validated_data["email"].lower()
                 
-            if validated_data.get("name", None):
+            if validated_data.get("name"):
                 validated_data["name"] = validated_data["name"].title()
                 
             if validated_phone != None:
                 raise CustomException("phone must be (xx)xxxxx-xxxx", 400)
 
-            return User.objects.update(**validated_data)
+            return super().update(instance, validated_data)
 
         except IntegrityError as e:
             raise CustomException("E-mail already exists", 422)
