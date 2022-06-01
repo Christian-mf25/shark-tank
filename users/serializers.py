@@ -22,12 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
             "is_staff": {"required": False, "write_only": True},
         }
 
-    def validate(self, attrs):
-        attrs["name"] = attrs["name"].title()
-        attrs["email"] = attrs["email"].lower()
-
-        return super().validate(attrs)
-
     def create(self, validated_data):
         try:
 
@@ -58,5 +52,12 @@ class UserInvestmetSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
+    
+    def validate(self, attrs):
+        attrs["name"] = attrs["name"].title()
+        attrs["email"] = attrs["email"].lower()
+
+        return super().validate(attrs)
+
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
