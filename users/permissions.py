@@ -18,6 +18,7 @@ class UserRoutesPermissions(BasePermission):
             return True
 
         if request.method == "GET":
+            print(request.user.is_superuser, ' <---====/// ')
             if not request.user.is_authenticated or not request.user.is_superuser:
                 return False
 
