@@ -3,6 +3,7 @@ import uuid
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import AbstractUser
 from django.test import TestCase
+
 from users.models import User
 
 
