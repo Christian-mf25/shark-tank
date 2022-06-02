@@ -14,7 +14,6 @@ load_dotenv()
 
 
 def initial_superuser(apps: StateApps, schema_editor):
-    User: User = apps.get_model("user", "User")
     User.objects.create_superuser(
         email=os.getenv("SUPERUSER_EMAIL"),
         name=os.getenv("SUPERUSER_NAME"),
