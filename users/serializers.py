@@ -45,18 +45,18 @@ class UserSerializer(serializers.ModelSerializer):
         try:
             user: user = self.context["request"].user
             
-            validated_phone = None
-            if validated_data.get("phone"):
+            if validated_data.get("phone", None):
                 valid_phone_regex = "(\(?\d{2}\)?)?(\d{4,5}\-\d{4})"
                 validated_phone = fullmatch(valid_phone_regex, validated_data["phone"])
+            
+            if not validated_phone:
+                raise CustomException("phone must be (xx)xxxxx-xxxx", 400)
+            
             if validated_data.get("email", None):
                 validated_data["email"] = validated_data["email"].lower()
                 
             if validated_data.get("name"):
                 validated_data["name"] = validated_data["name"].title()
-                
-            if validated_phone != None:
-                raise CustomException("phone must be (xx)xxxxx-xxxx", 400)
 
             return super().update(instance, validated_data)
 
