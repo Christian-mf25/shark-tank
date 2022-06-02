@@ -129,7 +129,7 @@ class IdeasView(APIView):
             )
         investments = Investment.objects.filter(idea_id=idea_id)
         investments.update(is_activated=False)
-        idea.update(is_deleted = True)
+        idea.update(is_deleted = True, is_activated=False)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
