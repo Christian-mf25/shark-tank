@@ -1,15 +1,12 @@
-from ideas.models import Idea
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.status import (
-    HTTP_200_OK,
-    HTTP_201_CREATED,
-    HTTP_404_NOT_FOUND,
-    HTTP_422_UNPROCESSABLE_ENTITY,
-)
+from rest_framework.status import (HTTP_200_OK, HTTP_201_CREATED,
+                                   HTTP_404_NOT_FOUND,
+                                   HTTP_422_UNPROCESSABLE_ENTITY)
 from rest_framework.views import APIView
 
+from ideas.models import Idea
 from investments.models import Investment
 from investments.permissions import IsInvestorOrSuperuser
 from investments.serializers import InvestmentSerializer
@@ -54,7 +51,7 @@ class InvestmentsView(APIView):
         return Response(serializer.data, HTTP_201_CREATED)
 
     def get(self, request: Request):
-        investments = Investment.objects.filter(user_id=request.user.uuid)
+        investments = Investment.objects.filter(user_id=request.user.uuid, is_activated=True)
 
         if request.user.is_superuser:
             investments = Investment.objects.all()

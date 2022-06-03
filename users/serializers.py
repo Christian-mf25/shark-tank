@@ -1,9 +1,9 @@
 from re import fullmatch
 
-from capstone.exceptions import CustomException
 from django.db import IntegrityError
 from rest_framework import serializers
 
+from capstone.exceptions import CustomException
 from users.models import User
 
 
@@ -22,20 +22,15 @@ class UserSerializer(serializers.ModelSerializer):
             "is_staff": {"required": False, "write_only": True},
         }
 
-    def validate(self, attrs):
-        attrs["name"] = attrs["name"].title()
-        attrs["email"] = attrs["email"].lower()
-
-        return super().validate(attrs)
-
     def create(self, validated_data):
         try:
-
             user: User = self.context["request"].user
 
             valid_phone_regex = "(\(?\d{2}\)?)?(\d{4,5}\-\d{4})"
             validated_phone = fullmatch(valid_phone_regex, validated_data["phone"])
-
+            validated_data["email"] = validated_data["email"].lower()
+            validated_data["name"] = validated_data["name"].title()
+            
             if not validated_phone:
                 raise CustomException("phone must be (xx)xxxxx-xxxx", 400)
 
@@ -46,6 +41,29 @@ class UserSerializer(serializers.ModelSerializer):
         except IntegrityError as e:
             raise CustomException("E-mail already exists", 422)
 
+    def update(self, instance, validated_data):
+        try:
+            user: user = self.context["request"].user
+            
+            if validated_data.get("phone", None):
+                valid_phone_regex = "(\(?\d{2}\)?)?(\d{4,5}\-\d{4})"
+                validated_phone = fullmatch(valid_phone_regex, validated_data["phone"])
+            
+            if not validated_phone:
+                raise CustomException("phone must be (xx)xxxxx-xxxx", 400)
+            
+            if validated_data.get("email", None):
+                validated_data["email"] = validated_data["email"].lower()
+                
+            if validated_data.get("name"):
+                validated_data["name"] = validated_data["name"].title()
+
+            return super().update(instance, validated_data)
+
+        except IntegrityError as e:
+            raise CustomException("E-mail already exists", 422)
+        
+            
 
 class UserInvestmetSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,5 +76,6 @@ class UserInvestmetSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
+
     email = serializers.EmailField(required=True)
     password = serializers.CharField(write_only=True, required=True)
